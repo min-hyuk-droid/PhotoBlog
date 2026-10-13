@@ -1,3 +1,4 @@
+from django.http import HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
@@ -34,11 +35,13 @@ def post_new(request):
 @login_required
 def post_edit(request, pk):
     post = get_object_or_404(Post, pk=pk)
+    # [편의기능] API 와 같은 규칙: 작성자 본인(또는 관리자)만 수정, 작성자는 바뀌지 않음
+    if post.author != request.user and not request.user.is_staff:
+        return HttpResponseForbidden('작성자만 수정할 수 있습니다.')
     if request.method == "POST":
         form = PostForm(request.POST, request.FILES, instance=post)
         if form.is_valid():
             post = form.save(commit=False)
-            post.author = request.user
             post.published_date = timezone.now()
             post.save()
             return redirect('post_detail', pk=post.pk)

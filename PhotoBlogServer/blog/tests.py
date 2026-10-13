@@ -189,6 +189,25 @@ class WebViewTest(MediaTestMixin, TestCase):
         self.client.post(url, {'title': '수정된 글', 'text': '내용'})
         self.assertEqual(Post.objects.get(pk=new.pk).title, '수정된 글')
 
+    def test_other_user_cannot_edit_on_web(self):
+        other = User.objects.create_user('other', password='pw-12345')
+        self.client.force_login(other)
+        url = reverse('post_edit', kwargs={'pk': self.post.pk})
+        self.assertEqual(self.client.get(url).status_code, 403)
+        self.assertEqual(self.client.post(url, {'title': '탈취', 'text': 'x'}).status_code, 403)
+        self.post.refresh_from_db()
+        self.assertEqual((self.post.title, self.post.author), ('웹 글', self.user))
+        # 다른 사람 글에는 수정 버튼이 보이지 않음
+        res = self.client.get(reverse('post_detail', kwargs={'pk': self.post.pk}))
+        self.assertNotContains(res, 'glyphicon-pencil')
+
+    def test_staff_edit_keeps_author(self):
+        admin = User.objects.create_superuser('admin2', password='pw-12345')
+        self.client.force_login(admin)
+        self.client.post(reverse('post_edit', kwargs={'pk': self.post.pk}), {'title': '관리자 수정', 'text': 'x'})
+        self.post.refresh_from_db()
+        self.assertEqual((self.post.title, self.post.author), ('관리자 수정', self.user))
+
     def test_js_test_page(self):
         self.assertEqual(self.client.get(reverse('js_test')).status_code, 200)
 

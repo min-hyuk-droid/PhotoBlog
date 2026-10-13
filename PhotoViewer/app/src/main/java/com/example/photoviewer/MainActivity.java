@@ -3,6 +3,8 @@ package com.example.photoviewer;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,6 +34,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -175,7 +178,9 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                 String apiUrl = urls[0];
                 URL urlAPI = new URL(apiUrl);
                 HttpURLConnection conn = (HttpURLConnection) urlAPI.openConnection();
-                conn.setRequestProperty("Authorization", "Token " + token);
+                if (!TextUtils.isEmpty(token)) {  // 토큰이 없으면(조회만) 헤더를 보내지 않음
+                    conn.setRequestProperty("Authorization", "Token " + token);
+                }
                 conn.setRequestMethod("GET");
                 conn.setConnectTimeout(3000);
                 conn.setReadTimeout(3000);
@@ -237,6 +242,10 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
 
     /** Upload (Post 에 따른 UI 제공): Post 의 title / text / image 를 입력받아 PutPost 로 게시 */
     public void onClickUpload(View v) {
+        if (TextUtils.isEmpty(token)) {
+            Toast.makeText(this, "업로드에는 토큰이 필요합니다 (secrets.properties)", Toast.LENGTH_LONG).show();
+            return;
+        }
         View form = getLayoutInflater().inflate(R.layout.dialog_upload, null);
         EditText editTitle = form.findViewById(R.id.editTitle);
         EditText editText = form.findViewById(R.id.editText);
@@ -256,8 +265,13 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
         dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(b -> {
             String title = editTitle.getText().toString().trim();
             String text = editText.getText().toString().trim();
+            // Post 모델 규칙에 맞춘 입력 검사: title(필수, 200자), text(필수), image
             if (title.isEmpty()) {
                 editTitle.setError("제목을 입력하세요");
+                return;
+            }
+            if (text.isEmpty()) {
+                editText.setError("내용을 입력하세요");
                 return;
             }
             if (selectedImageUri == null) {
@@ -267,9 +281,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
             if (taskUpload != null && taskUpload.getStatus() == AsyncTask.Status.RUNNING) {
                 taskUpload.cancel(true);
             }
-            taskUpload = new PutPost(selectedImageUri);
+            taskUpload = new PutPost(selectedImageUri, dialog, editTitle, editText);
             taskUpload.execute(site_url + "/api_root/Post/", title, text);
-            dialog.dismiss();
         }));
         dialog.show();
 
@@ -280,31 +293,68 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
     private class PutPost extends AsyncTask<String, Void, Void> {
         private static final String BOUNDARY = "----PhotoViewerBoundary7MA4YWxk";
         private final Uri imageUri;
+        private final AlertDialog dialog;
+        private final EditText titleInput;
+        private final EditText textInput;
         private int responseCode;
         private String responseBody = "";
 
-        PutPost(Uri imageUri) {
+        PutPost(Uri imageUri, AlertDialog dialog, EditText titleInput, EditText textInput) {
             this.imageUri = imageUri;
+            this.dialog = dialog;
+            this.titleInput = titleInput;
+            this.textInput = textInput;
         }
 
         @Override
         protected void onPreExecute() {
+            // 업로드가 끝날 때까지 게시 화면을 유지하고 중복 게시를 막음 (실패하면 입력 내용 그대로 재시도 가능)
+            setUploading(true);
             textView.setText("업로드 중...");
+        }
+
+        /** 서버 검증 오류(400: {"필드": ["메시지"]})를 해당 입력칸에 표시 */
+        private void showFieldErrors() {
+            if (responseCode != HttpURLConnection.HTTP_BAD_REQUEST) {
+                return;
+            }
+            try {
+                JSONObject errors = new JSONObject(responseBody);
+                JSONArray title = errors.optJSONArray("title");
+                JSONArray text = errors.optJSONArray("text");
+                if (title != null) {
+                    titleInput.setError(title.optString(0));
+                }
+                if (text != null) {
+                    textInput.setError(text.optString(0));
+                }
+            } catch (JSONException ignored) {
+            }
+        }
+
+        private void setUploading(boolean uploading) {
+            dialog.setTitle(uploading ? "업로드 중..." : "새로운 이미지 게시");
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(!uploading);
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setEnabled(!uploading);
         }
 
         @Override
         protected Void doInBackground(String... params) {
             try {
-                // 선택한 이미지를 JPEG 로 압축
-                InputStream in = getContentResolver().openInputStream(imageUri);
-                Bitmap bitmap = BitmapFactory.decodeStream(in);
-                in.close();
+                // 선택한 이미지를 최대 1600px, 촬영 방향(EXIF) 그대로 JPEG 로 압축
+                Bitmap bitmap = loadUploadImage(imageUri, 1600);
+                if (bitmap == null) {
+                    responseBody = "이미지를 읽을 수 없습니다.";
+                    return null;
+                }
                 ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 90, jpeg);
 
                 URL urlAPI = new URL(params[0]);
                 HttpURLConnection conn = (HttpURLConnection) urlAPI.openConnection();
-                conn.setRequestProperty("Authorization", "Token " + token);
+                if (!TextUtils.isEmpty(token)) {  // 토큰이 없으면(조회만) 헤더를 보내지 않음
+                    conn.setRequestProperty("Authorization", "Token " + token);
+                }
                 conn.setRequestProperty("Accept", "application/json");
                 conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + BOUNDARY);
                 conn.setRequestMethod("POST");
@@ -349,6 +399,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
         @Override
         protected void onPostExecute(Void unused) {
             if (responseCode == HttpURLConnection.HTTP_CREATED) {
+                dialog.dismiss();
                 String title = "";
                 try {
                     title = new JSONObject(responseBody).optString("title");
@@ -357,9 +408,51 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                 Toast.makeText(MainActivity.this, "게시 완료: " + title, Toast.LENGTH_LONG).show();
                 onClickDownload(null); // 목록 다시 동기화
             } else {
-                textView.setText("업로드 실패 (" + responseCode + ") " + responseBody);
+                setUploading(false);
+                showFieldErrors();
+                String message = "업로드 실패 (" + responseCode + ") " + responseBody;
+                textView.setText(message);
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    /** 큰 사진은 maxSize 이하로 줄여서 읽고, EXIF 회전 정보대로 바로 세운다 (메모리 부족·눕은 사진 방지) */
+    private Bitmap loadUploadImage(Uri uri, int maxSize) throws IOException {
+        byte[] data;
+        try (InputStream in = getContentResolver().openInputStream(uri)) {
+            ByteArrayOutputStream buf = new ByteArrayOutputStream();
+            byte[] chunk = new byte[8192];
+            int n;
+            while ((n = in.read(chunk)) != -1) {
+                buf.write(chunk, 0, n);
+            }
+            data = buf.toByteArray();
+        }
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(data, 0, data.length, opts);
+        int sample = 1;
+        while (Math.max(opts.outWidth, opts.outHeight) / (sample * 2) >= maxSize) {
+            sample *= 2;
+        }
+        opts = new BitmapFactory.Options();
+        opts.inSampleSize = sample;
+        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, opts);
+        if (bitmap == null) {
+            return null;
+        }
+        int orientation = new ExifInterface(new ByteArrayInputStream(data))
+                .getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        int degrees = orientation == ExifInterface.ORIENTATION_ROTATE_90 ? 90
+                : orientation == ExifInterface.ORIENTATION_ROTATE_180 ? 180
+                : orientation == ExifInterface.ORIENTATION_ROTATE_270 ? 270 : 0;
+        if (degrees == 0) {
+            return bitmap;
+        }
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degrees);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
     // ------------------------------------------------------------------ [편의기능] 상세보기 / 삭제
@@ -402,7 +495,9 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
             try {
                 URL url = new URL(site_url + "/api_root/Post/" + ids[0] + "/");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("Authorization", "Token " + token);
+                if (!TextUtils.isEmpty(token)) {  // 토큰이 없으면(조회만) 헤더를 보내지 않음
+                    conn.setRequestProperty("Authorization", "Token " + token);
+                }
                 conn.setRequestMethod("DELETE");
                 conn.setConnectTimeout(3000);
                 conn.setReadTimeout(3000);
