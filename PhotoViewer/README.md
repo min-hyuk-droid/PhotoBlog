@@ -31,11 +31,12 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 | *(편의)* 게시물 카드 / 상세보기 | 이미지 아래 제목·작성자·게시일 표시, 탭하면 큰 이미지와 본문을 보여주는 상세 다이얼로그 |
 | *(편의)* 검색 | 검색창 → `GET /api_root/Post/?search=키워드` |
 | *(편의)* 길게 눌러 삭제 | 확인 다이얼로그 → `DELETE /api_root/Post/{id}/` (서버는 작성자만 허용, 403 안내) |
-| *(편의)* 서버 선택 | 로컬(`http://10.0.2.2:8000`) ↔ 클라우드(PythonAnywhere) 스피너, 선택 값 저장 |
+| *(편의)* 자동 동기화 / 당겨서 새로고침 | 앱을 켜면 바로 동기화, 목록을 아래로 당기면 다시 받아옴 (`SwipeRefreshLayout`) |
+| 서버 선택 | 로컬(`http://10.0.2.2:8000`) ↔ 클라우드(PythonAnywhere) 스피너, 선택 값 저장, 바꾸면 바로 동기화 |
 
 ## 주요 파일
 
-- [`MainActivity.java`](app/src/main/java/com/example/photoviewer/MainActivity.java) — 동기화/업로드/검색/삭제/서버 선택
+- [`MainActivity.java`](app/src/main/java/com/example/photoviewer/MainActivity.java) — 동기화/자동 동기화·당겨서 새로고침/업로드/검색/삭제/서버 선택
 - [`ImageAdapter.java`](app/src/main/java/com/example/photoviewer/ImageAdapter.java) — RecyclerView 어댑터
 - [`Post.java`](app/src/main/java/com/example/photoviewer/Post.java) — 게시물 JSON 모델
 - [`AndroidManifest.xml`](app/src/main/AndroidManifest.xml), [`network_security_config.xml`](app/src/main/res/xml/network_security_config.xml) — 인터넷 권한, 평문(HTTP) 통신 허용 (강의자료 12~13p)
