@@ -11,7 +11,7 @@ ROOT
 
 | 폴더 | 내용 |
 |---|---|
-| [PhotoBlogServer](PhotoBlogServer) | 포토 블로그 웹 + REST API(`/api_root/Post/`), API 검증 엔진·자동 테스트(커버리지 98%), Socket Server |
+| [PhotoBlogServer](PhotoBlogServer) | 포토 블로그 웹 + REST API(`/api_root/Post/`), API 검증 엔진·자동 테스트(커버리지 100%), Socket Server |
 | [PhotoViewer](PhotoViewer) | 동기화(이미지 목록), 새로운 이미지 게시(Post 에 따른 UI), 검색·상세보기·삭제·서버 선택 |
 
 - 클라우드 서버: https://smh0927.pythonanywhere.com ([배포 기록](PhotoBlogServer/DEPLOY_PYTHONANYWHERE.md))
@@ -23,7 +23,7 @@ ROOT
 | 3 | 포토 블로그 – API (POST) | DRF API 화면에서 multipart POST → 201 |
 | 4 | API 검증 (2/3) | telnet 원시 HTTP 요청/응답 |
 | 5 | API 검증 (3/3) | codebeautify JSON Viewer |
-| 6 | API 검증 엔진 자동테스트 | [`api_engine.py`](PhotoBlogServer/blog/api_engine.py), [`tests.py`](PhotoBlogServer/blog/tests.py) — 26 tests, coverage 98% |
+| 6 | API 검증 엔진 자동테스트 | [`api_engine.py`](PhotoBlogServer/blog/api_engine.py), [`tests.py`](PhotoBlogServer/blog/tests.py) — 27 tests, coverage 100% |
 | 7 | Socket Server 요청 메시지 | [`socket_server.py`](PhotoBlogServer/test_api/socket_server.py) |
 | 8–10 | Server/Client 연동 (localhost) | 웹 화면, 앱 시작/동기화 화면 |
 | 11 | MainActivity Upload | **Post 에 따른 UI 제공(상)** — 제목·내용·이미지 입력 → multipart POST |

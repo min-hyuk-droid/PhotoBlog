@@ -82,7 +82,7 @@ def parse_http_response(raw):
     if not sep:
         raise ValueError('HTTP 헤더와 본문을 구분하는 빈 줄(Empty Line)이 없습니다.')
     lines = head.decode('iso-8859-1').split('\r\n')
-    version, status, reason = (lines[0].split(' ', 2) + [''])[:3]
+    version, status, reason = (lines[0].split(' ', 2) + ['', ''])[:3]
     if not version.startswith('HTTP/'):
         raise ValueError(f'올바른 Response Line 이 아닙니다: {lines[0]!r}')
     headers = {}
