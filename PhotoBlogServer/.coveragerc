@@ -1,0 +1,11 @@
+[run]
+source = blog, mysite
+omit =
+    */migrations/*
+    */tests.py
+    mysite/asgi.py
+    mysite/wsgi.py
+
+[html]
+directory = htmlcov
+title = PhotoBlogServer API Test Coverage
