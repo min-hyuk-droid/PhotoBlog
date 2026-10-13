@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,10 +21,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-of3ij*#ideq(9y+_#hdr5u=&b@_3jr_hnsp(#y+e*dpd_m*!hr'
+# 배포 서버(PythonAnywhere)는 WSGI 파일에서 환경변수로 비밀키와 DEBUG=False 를 지정한다
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-of3ij*#ideq(9y+_#hdr5u=&b@_3jr_hnsp(#y+e*dpd_m*!hr')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '10.0.2.2', '.pythonanywhere.com']
 
