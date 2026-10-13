@@ -224,5 +224,3 @@ __marimo__/
 # 업로드된 게시글 이미지 (default_error.png, pig.png 외)
 media/images/*/
 
-# Socket Server 수신 메시지 (토큰 포함)
-test_api/request.txt
