@@ -12,7 +12,7 @@ ROOT
 | 폴더 | 내용 |
 |---|---|
 | [PhotoBlogServer](PhotoBlogServer) | 포토 블로그 웹 + REST API(`/api_root/Post/`), API 검증 엔진·자동 테스트(커버리지 100%), Socket Server |
-| [PhotoViewer](PhotoViewer) | 동기화(이미지 목록), 새로운 이미지 게시(Post 에 따른 UI), 검색·상세보기·삭제·서버 선택 |
+| [PhotoViewer](PhotoViewer) | 동기화(이미지 목록), 새로운 이미지 게시(Post 에 따른 UI), 검색·상세보기·삭제·자동 동기화·당겨서 새로고침·서버 선택 |
 
 - 클라우드 서버: https://smh0927.pythonanywhere.com ([배포 기록](PhotoBlogServer/DEPLOY_PYTHONANYWHERE.md))
 - 평가 항목별 캡처는 보고서(.docx)에 정리했다.
@@ -28,4 +28,4 @@ ROOT
 | 8–10 | Server/Client 연동 (localhost) | 웹 화면, 앱 시작/동기화 화면 |
 | 11 | MainActivity Upload | **Post 에 따른 UI 제공(상)** — 제목·내용·이미지 입력 → multipart POST |
 | 12, 13 | PythonAnywhere 동작 | 클라우드 웹 화면, 앱 클라우드 동기화·업로드 |
-| 14 | 편의 기능 5개 | 검색 API / 앱 검색 / 작성자만 수정·삭제 / 상세보기·길게 눌러 삭제 / 서버 선택 |
+| 14 | 편의 기능 5개 | 검색 API / 앱 검색 / 작성자만 수정·삭제 / 상세보기·길게 눌러 삭제 / 자동 동기화·당겨서 새로고침 |

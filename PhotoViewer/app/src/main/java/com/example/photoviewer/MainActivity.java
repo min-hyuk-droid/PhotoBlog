@@ -28,6 +28,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -67,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
     private static final String[] SERVER_TOKENS = {BuildConfig.LOCAL_TOKEN, BuildConfig.REMOTE_TOKEN};
     private static final String PREF_SERVER = "server";
     private SharedPreferences prefs;
+    private SwipeRefreshLayout swipeRefresh;
     private EditText editSearch;
 
     // 마지막으로 동기화한 목록 ([편의기능] 상세보기/삭제에서 사용)
@@ -98,6 +100,15 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
 
         setupServerSpinner();
 
+        // [편의기능] 당겨서 새로고침: 지금 보고 있는 목록(검색어가 있으면 검색 결과)을 다시 받아옴
+        swipeRefresh = findViewById(R.id.swipeRefresh);
+        swipeRefresh.setOnRefreshListener(() -> onClickSearch(null));
+
+        // [편의기능] 앱을 켜면 자동 동기화 (화면을 돌려 다시 만들어질 때는 제외)
+        if (savedInstanceState == null) {
+            onClickDownload(null);
+        }
+
         editSearch.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 onClickSearch(v);
@@ -114,7 +125,15 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                 android.R.layout.simple_spinner_item, SERVER_NAMES);
         serverAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(serverAdapter);
-        spinner.setSelection(prefs.getInt(PREF_SERVER, 0));
+        // 마지막으로 고른 서버로 시작 (자동 동기화가 이 서버로 요청하도록 먼저 지정)
+        int saved = prefs.getInt(PREF_SERVER, 0);
+        if (saved < SERVER_URLS.length && !TextUtils.isEmpty(SERVER_URLS[saved])) {
+            site_url = SERVER_URLS[saved];
+            token = SERVER_TOKENS[saved];
+        } else {
+            saved = 0;
+        }
+        spinner.setSelection(saved);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -129,8 +148,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                 token = SERVER_TOKENS[position];
                 prefs.edit().putInt(PREF_SERVER, position).apply();
                 if (changed) {
-                    showImages(new ArrayList<>(), new ArrayList<>());
-                    textView.setText("서버: " + site_url);
+                    onClickDownload(null);  // 서버를 바꾸면 바로 그 서버의 목록으로 동기화
                 }
             }
 
@@ -170,6 +188,11 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
     private class CloadImage extends AsyncTask<String, Integer, List<Bitmap>> {
         // [편의기능] 이미지와 같은 순서로 게시물 정보(제목·작성자·게시일·id)도 보관
         private final List<Post> loadedPosts = new ArrayList<>();
+
+        @Override
+        protected void onPreExecute() {
+            swipeRefresh.setRefreshing(true);  // 동기화 중 표시 (버튼·자동·당겨서 새로고침 모두)
+        }
 
         @Override
         protected List<Bitmap> doInBackground(String... urls) {
@@ -220,6 +243,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
 
         @Override
         protected void onPostExecute(List<Bitmap> images) {
+            swipeRefresh.setRefreshing(false);
             if (images.isEmpty()) {
                 textView.setText("불러올 이미지가 없습니다.");
             } else {
