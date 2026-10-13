@@ -37,12 +37,20 @@ python manage.py shell -c "from django.contrib.auth.models import User; from res
 
 ```python
 import os, sys
+os.environ['DJANGO_DEBUG'] = 'False'                 # 배포 서버는 오류 상세 화면을 노출하지 않음
+os.environ['DJANGO_SECRET_KEY'] = '<서버에서 생성한 비밀키>'  # 아래 명령으로 생성, git 에 올리지 않음
 path = '/home/smh0927/PhotoBlog/PhotoBlogServer'
 if path not in sys.path:
     sys.path.insert(0, path)
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mysite.settings'
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
+```
+
+비밀키는 PythonAnywhere 콘솔에서 바로 만들어 WSGI 파일에만 넣었다.
+
+```bash
+python3 -c 'import secrets; print(secrets.token_urlsafe(50))'
 ```
 
 ## 4. Reload → 확인
