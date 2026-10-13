@@ -7,6 +7,7 @@ import io
 import json
 import shutil
 import tempfile
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -217,10 +218,21 @@ class ApiEngineUnitTest(TestCase):
         self.assertEqual(api_engine.parse_http_response(raw).body, '[{}]')
 
     def test_parse_errors(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError, 'Empty Line'):
             api_engine.parse_http_response(b'HTTP/1.1 200 OK\r\n')
-        with self.assertRaises(ValueError):
+        # 공백이 없는 첫 줄도 "Response Line 아님" 으로 판정해야 한다 (커버리지 리포트에서 발견)
+        with self.assertRaisesRegex(ValueError, 'Response Line'):
             api_engine.parse_http_response(b'garbage\r\n\r\n')
+
+    def test_check_server_reports_errors(self):
+        raw = (b'HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n'
+               b'<h1>Not Found</h1>')
+        with mock.patch.object(api_engine, 'send_raw_request', return_value=raw):
+            response, errors = api_engine.check_server('http://127.0.0.1:8000')
+        self.assertEqual(response.status, 404)
+        self.assertTrue(any('상태 코드 404' in e for e in errors))
+        self.assertTrue(any('Content-Type' in e for e in errors))
+        self.assertTrue(any('Allow 헤더' in e for e in errors))
 
     def test_validate_detects_problems(self):
         self.assertIn('JSON 형식 오류', api_engine.validate_post_list('[{')[0])

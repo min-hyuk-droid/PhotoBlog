@@ -41,7 +41,7 @@ python manage.py runserver
 | 파일 | 내용 |
 |---|---|
 | [`blog/api_engine.py`](blog/api_engine.py) | **API 검증 엔진** — telnet 과 같은 원시 HTTP 요청 생성·전송, Response Line/Header/Body 파싱, 게시물 JSON Array 스키마 검증 (강의자료 8~10p 를 코드로) |
-| [`blog/tests.py`](blog/tests.py) | Django 자동 테스트 26개 — GET/POST/검색/권한/토큰/웹 화면/엔진 단위 테스트/실서버 원시 소켓 테스트 |
+| [`blog/tests.py`](blog/tests.py) | Django 자동 테스트 27개 — GET/POST/검색/권한/토큰/웹 화면/엔진 단위 테스트/실서버 원시 소켓 테스트 |
 | [`test_api/api_check.py`](test_api/api_check.py) | 실행 중인 서버(로컬·PythonAnywhere)를 엔진으로 점검하는 CLI |
 | [`test_api/socket_server.py`](test_api/socket_server.py) | 앱의 요청 메시지를 받아 `request.txt` 로 저장하는 Socket Server (강의자료 24p) |
 | [`test_api/permission_check.py`](test_api/permission_check.py) | 남의 글 수정/삭제 403, 내 글 삭제 204 확인 |
@@ -49,7 +49,7 @@ python manage.py runserver
 
 ```bash
 python manage.py test blog                    # 자동 테스트
-coverage run manage.py test blog && coverage html   # htmlcov/index.html (현재 98%)
+coverage run manage.py test blog && coverage html   # htmlcov/index.html (현재 100%)
 python test_api/api_check.py                  # 실행 중인 서버 검증
 python test_api/api_check.py http://<아이디>.pythonanywhere.com
 ```
