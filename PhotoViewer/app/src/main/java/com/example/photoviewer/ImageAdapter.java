@@ -1,0 +1,70 @@
+package com.example.photoviewer;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.List;
+
+/** RecyclerView 를 이용한 이미지 목록 (강의자료 16~17p) + 제목/작성자·게시일 표시 */
+public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHolder> {
+
+    public interface OnPostClickListener {
+        void onClick(Post post);
+
+        void onLongClick(Post post);
+    }
+
+    private final List<Post> postList;
+    private final OnPostClickListener listener;
+
+    public ImageAdapter(List<Post> postList, OnPostClickListener listener) {
+        this.postList = postList;
+        this.listener = listener;
+    }
+
+    @NonNull
+    @Override
+    public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // 이미지 항목을 나타낼 뷰 생성
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image, parent, false);
+        return new ImageViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
+        // 해당 위치의 이미지를 뷰에 설정
+        Post post = postList.get(position);
+        holder.imageView.setImageBitmap(post.bitmap);
+        holder.textTitle.setText(post.title);
+        holder.textMeta.setText(post.meta());
+        holder.itemView.setOnClickListener(v -> listener.onClick(post));
+        holder.itemView.setOnLongClickListener(v -> {
+            listener.onLongClick(post);
+            return true;
+        });
+    }
+
+    @Override
+    public int getItemCount() {
+        return postList.size();
+    }
+
+    public static class ImageViewHolder extends RecyclerView.ViewHolder {
+        ImageView imageView;
+        TextView textTitle;
+        TextView textMeta;
+
+        public ImageViewHolder(View itemView) {
+            super(itemView);
+            imageView = itemView.findViewById(R.id.imageViewItem); // item_image.xml 에 있는 ImageView
+            textTitle = itemView.findViewById(R.id.textTitle);
+            textMeta = itemView.findViewById(R.id.textMeta);
+        }
+    }
+}
