@@ -1,10 +1,8 @@
 package com.example.photoviewer;
 
-import android.graphics.Bitmap;
-
 import org.json.JSONObject;
 
-/** 서버 /api_root/Post/ 의 게시물 1개 (JSON Object) + 내려받은 이미지 */
+/** 서버 /api_root/Post/ 의 게시물 1개 (JSON Object) — [편의기능] 제목·작성자·게시일 표시, 상세보기, 삭제에 사용 */
 public class Post {
     public final int id;
     public final int author;
@@ -13,7 +11,6 @@ public class Post {
     public final String text;
     public final String publishedDate;
     public final String imageUrl;
-    public Bitmap bitmap;
 
     public Post(JSONObject json) {
         id = json.optInt("id");
