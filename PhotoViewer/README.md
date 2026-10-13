@@ -27,7 +27,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 | 기능 | 구현 |
 |---|---|
 | 동기화 | `onClickDownload` → `CloadImage extends AsyncTask<String, Integer, List<Bitmap>>`: `GET /api_root/Post/` (Token 인증) → JSON Array 파싱 → 이미지 다운로드 → RecyclerView 표시 (강의자료 18~23p 구조 그대로) |
-| 새로운 이미지 게시 (Upload, **Post 에 따른 UI 제공**) | `onClickUpload` → 제목(title)·내용(text) 입력 + Photo Picker 로 이미지(image) 선택 → `PutPost extends AsyncTask<String, Void, Void>` (강의자료 19p): `POST /api_root/Post/` multipart → 201 이면 목록 재동기화 |
+| 새로운 이미지 게시 (Upload, **Post 에 따른 UI 제공**) | `onClickUpload` → Post 모델 필드대로 제목(title, 필수·200자)·내용(text, 필수) 입력 + Photo Picker 로 이미지(image) 선택·미리보기 → 입력 검사 → `PutPost extends AsyncTask<String, Void, Void>` (강의자료 19p): `POST /api_root/Post/` multipart (큰 사진 축소·EXIF 회전 반영) → 업로드 중 버튼 잠금 → 201 이면 목록 재동기화, 400 이면 필드 오류 표시 |
 | *(편의)* 게시물 카드 / 상세보기 | 이미지 아래 제목·작성자·게시일 표시, 탭하면 큰 이미지와 본문을 보여주는 상세 다이얼로그 |
 | *(편의)* 검색 | 검색창 → `GET /api_root/Post/?search=키워드` |
 | *(편의)* 길게 눌러 삭제 | 확인 다이얼로그 → `DELETE /api_root/Post/{id}/` (서버는 작성자만 허용, 403 안내) |
