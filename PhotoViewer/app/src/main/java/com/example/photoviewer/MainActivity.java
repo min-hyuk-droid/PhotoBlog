@@ -8,6 +8,10 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -73,6 +77,11 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
     private SharedPreferences prefs;
     private SwipeRefreshLayout swipeRefresh;
     private EditText editSearch;
+    // [편의기능] 실시간 검색: 입력을 멈추고 잠시(SEARCH_DELAY_MS) 뒤 자동 검색 (글자마다 요청하지 않도록)
+    private static final long SEARCH_DELAY_MS = 400;
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private final Runnable searchRunnable = () -> onClickSearch(null);
+    private boolean clearingSearch = false;
 
     // 마지막으로 동기화한 목록 ([편의기능] 상세보기/삭제에서 사용)
     private List<Bitmap> imageList = new ArrayList<>();
@@ -111,6 +120,24 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
         if (savedInstanceState == null) {
             onClickDownload(null);
         }
+
+        editSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                searchHandler.removeCallbacks(searchRunnable);
+                if (!clearingSearch) {
+                    searchHandler.postDelayed(searchRunnable, SEARCH_DELAY_MS);
+                }
+            }
+        });
 
         editSearch.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -164,7 +191,11 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
     // ------------------------------------------------------------------ 동기화 (강의자료 20~23p)
 
     public void onClickDownload(View v) {
+        // 검색어를 지울 때는 실시간 검색이 다시 돌지 않게 함 (아래에서 전체 목록을 바로 받아옴)
+        clearingSearch = true;
         editSearch.setText("");
+        clearingSearch = false;
+        searchHandler.removeCallbacks(searchRunnable);
         if (taskDownload != null && taskDownload.getStatus() == AsyncTask.Status.RUNNING) {
             taskDownload.cancel(true);
         }
@@ -176,7 +207,10 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
     // [편의기능] 검색: GET /api_root/Post/?search=키워드
     public void onClickSearch(View v) {
         String keyword = editSearch.getText().toString().trim();
-        hideKeyboard();
+        searchHandler.removeCallbacks(searchRunnable);
+        if (v != null) {
+            hideKeyboard();  // 검색 버튼·엔터일 때만 키보드를 내림 (입력 중 자동 검색은 계속 타이핑 가능)
+        }
         String url = site_url + "/api_root/Post/";
         if (!keyword.isEmpty()) {
             url += "?search=" + URLEncoder.encode(keyword, StandardCharsets.UTF_8);
