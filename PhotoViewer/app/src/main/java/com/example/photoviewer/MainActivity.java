@@ -41,8 +41,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -188,6 +191,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
     private class CloadImage extends AsyncTask<String, Integer, List<Bitmap>> {
         // [편의기능] 이미지와 같은 순서로 게시물 정보(제목·작성자·게시일·id)도 보관
         private final List<Post> loadedPosts = new ArrayList<>();
+        // 실패 원인 (null 이면 정상). 연결 실패 / 서버 오류 / 응답 형식 오류를 구분해서 보여줌
+        private String errorMessage;
 
         @Override
         protected void onPreExecute() {
@@ -234,9 +239,18 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                             imgStream.close();
                         }
                     }
+                } else {
+                    errorMessage = "서버 응답 오류 (HTTP " + responseCode + ")";
                 }
-            } catch (IOException | JSONException e) {
+            } catch (ConnectException | SocketTimeoutException | UnknownHostException e) {
                 e.printStackTrace();
+                errorMessage = "서버에 연결할 수 없습니다 (" + site_url + ").\n서버가 켜져 있는지 확인하세요.";
+            } catch (JSONException e) {
+                e.printStackTrace();
+                errorMessage = "서버 응답 형식 오류 (게시물 JSON Array 가 아님)";
+            } catch (IOException e) {
+                e.printStackTrace();
+                errorMessage = "네트워크 오류: " + e.getMessage();
             }
             return bitmapList;
         }
@@ -244,6 +258,12 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
         @Override
         protected void onPostExecute(List<Bitmap> images) {
             swipeRefresh.setRefreshing(false);
+            if (errorMessage != null) {
+                // 실패하면 이전에 받아 둔 목록은 그대로 두고 원인만 표시
+                textView.setText(errorMessage);
+                Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                return;
+            }
             if (images.isEmpty()) {
                 textView.setText("불러올 이미지가 없습니다.");
             } else {
