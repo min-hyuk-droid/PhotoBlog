@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 앱 아이콘(검정 배경 + 노란 렌즈)과 같은 색감 -->
+<resources>
+    <color name="brand_black">#17161D</color>
+    <color name="surface">#22212A</color>
+    <color name="surface_variant">#2D2C36</color>
+    <color name="outline">#4A4954</color>
+    <color name="brand_yellow">#FFB020</color>
+    <color name="yellow_container">#3B3220</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#A9A8B3</color>
+    <color name="error">#FF6B6B</color>
+</resources>
