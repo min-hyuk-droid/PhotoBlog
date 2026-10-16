@@ -59,6 +59,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPostClickListener {
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
+    // 연결·응답 대기 시간 (강의자료는 3초. 클라우드 HTTPS 첫 연결이 3초를 넘는 경우가 있어 늘림)
+    private static final int CONNECT_TIMEOUT_MS = 8000;
+    private static final int READ_TIMEOUT_MS = 15000;
     ImageView imgView;
     TextView textView;
     String site_url = "http://10.0.2.2:8000";
@@ -130,6 +133,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
 
         // [편의기능] 당겨서 새로고침: 지금 보고 있는 목록(검색어가 있으면 검색 결과)을 다시 받아옴
         swipeRefresh = findViewById(R.id.swipeRefresh);
+        swipeRefresh.setColorSchemeColors(getColor(R.color.brand_yellow));
+        swipeRefresh.setProgressBackgroundColorSchemeColor(getColor(R.color.surface));
         swipeRefresh.setOnRefreshListener(() -> onClickSearch(null));
 
         // [편의기능] 앱을 켜면 자동 동기화 (화면을 돌려 다시 만들어질 때는 제외)
@@ -262,8 +267,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                     conn.setRequestProperty("Authorization", "Token " + token);
                 }
                 conn.setRequestMethod("GET");
-                conn.setConnectTimeout(3000);
-                conn.setReadTimeout(3000);
+                conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
+                conn.setReadTimeout(READ_TIMEOUT_MS);
                 int responseCode = conn.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     InputStream is = conn.getInputStream();
@@ -284,6 +289,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                         if (!imageUrl.equals("")) {
                             URL myImageUrl = new URL(imageUrl);
                             conn = (HttpURLConnection) myImageUrl.openConnection();
+                            conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
+                            conn.setReadTimeout(READ_TIMEOUT_MS);
                             InputStream imgStream = conn.getInputStream();
                             Bitmap imageBitmap = BitmapFactory.decodeStream(imgStream);
                             bitmapList.add(imageBitmap); // 이미지 리스트에 추가
@@ -294,7 +301,10 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                 } else {
                     errorMessage = "서버 응답 오류 (HTTP " + responseCode + ")";
                 }
-            } catch (ConnectException | SocketTimeoutException | UnknownHostException e) {
+            } catch (SocketTimeoutException e) {
+                e.printStackTrace();
+                errorMessage = "서버 응답이 늦습니다 (" + site_url + ").\n잠시 후 다시 시도하거나 아래로 당겨 새로고침하세요.";
+            } catch (ConnectException | UnknownHostException e) {
                 e.printStackTrace();
                 errorMessage = "서버에 연결할 수 없습니다 (" + site_url + ").\n서버가 켜져 있는지 확인하세요.";
             } catch (JSONException e) {
@@ -458,8 +468,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                 conn.setRequestProperty("Accept", "application/json");
                 conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + BOUNDARY);
                 conn.setRequestMethod("POST");
-                conn.setConnectTimeout(3000);
-                conn.setReadTimeout(5000);
+                conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
+                conn.setReadTimeout(READ_TIMEOUT_MS);
                 conn.setDoOutput(true);
                 try (DataOutputStream out = new DataOutputStream(conn.getOutputStream())) {
                     writeField(out, "title", params[1]);
@@ -615,8 +625,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                     conn.setRequestProperty("Authorization", "Token " + token);
                 }
                 conn.setRequestMethod("DELETE");
-                conn.setConnectTimeout(3000);
-                conn.setReadTimeout(3000);
+                conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
+                conn.setReadTimeout(READ_TIMEOUT_MS);
                 return conn.getResponseCode();
             } catch (IOException e) {
                 e.printStackTrace();
