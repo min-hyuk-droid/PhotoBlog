@@ -30,6 +30,7 @@ import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -42,6 +43,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -91,6 +93,9 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
     private Uri selectedImageUri;
     private ImageView uploadPreview;
     private ActivityResultLauncher<PickVisualMediaRequest> pickImage;
+    // [편의기능] 카메라로 찍어서 바로 게시
+    private ActivityResultLauncher<Uri> takePhoto;
+    private Uri cameraPhotoUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +111,17 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                 selectedImageUri = uri;
                 if (uploadPreview != null) {
                     uploadPreview.setImageURI(uri);
+                }
+            }
+        });
+
+        // [편의기능] 카메라 촬영: 카메라 앱이 cameraPhotoUri 파일에 사진을 저장하면 그 사진을 게시 이미지로 사용
+        takePhoto = registerForActivityResult(new ActivityResultContracts.TakePicture(), saved -> {
+            if (Boolean.TRUE.equals(saved) && cameraPhotoUri != null) {
+                selectedImageUri = cameraPhotoUri;
+                if (uploadPreview != null) {
+                    uploadPreview.setImageURI(null);
+                    uploadPreview.setImageURI(cameraPhotoUri);
                 }
             }
         });
@@ -178,7 +194,9 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                 token = SERVER_TOKENS[position];
                 prefs.edit().putInt(PREF_SERVER, position).apply();
                 if (changed) {
-                    onClickDownload(null);  // 서버를 바꾸면 바로 그 서버의 목록으로 동기화
+                    // 이전 서버의 목록은 지우고(실패해도 다른 서버 글이 남아 보이지 않게) 바로 새 서버로 동기화
+                    showImages(new ArrayList<>(), new ArrayList<>());
+                    onClickDownload(null);
                 }
             }
 
@@ -333,6 +351,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
         btnPick.setOnClickListener(b -> pickImage.launch(new PickVisualMediaRequest.Builder()
                 .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
                 .build()));
+        Button btnTakePhoto = form.findViewById(R.id.btnTakePhoto);
+        btnTakePhoto.setOnClickListener(b -> startCamera());
 
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("새로운 이미지 게시")
@@ -340,6 +360,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                 .setNegativeButton("취소", null)
                 .setPositiveButton("게시", null)
                 .create();
+        // 바깥을 잘못 눌러도 입력한 제목·내용·사진이 사라지지 않게 함 (취소 버튼·뒤로가기로만 닫힘)
+        dialog.setCanceledOnTouchOutside(false);
         dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(b -> {
             String title = editTitle.getText().toString().trim();
             String text = editText.getText().toString().trim();
@@ -492,6 +514,22 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                 textView.setText(message);
                 Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
             }
+        }
+    }
+
+    /** [편의기능] 앱 캐시에 새 파일을 만들고 그 주소를 카메라 앱에 넘겨 촬영 (CAMERA 권한 없이 카메라 앱 사용) */
+    private void startCamera() {
+        try {
+            File dir = new File(getCacheDir(), "camera");
+            if (!dir.exists() && !dir.mkdirs()) {
+                throw new IOException("카메라 저장 폴더를 만들 수 없습니다");
+            }
+            File photo = new File(dir, "camera_" + System.currentTimeMillis() + ".jpg");
+            cameraPhotoUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", photo);
+            takePhoto.launch(cameraPhotoUri);
+        } catch (IOException | android.content.ActivityNotFoundException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "카메라를 실행할 수 없습니다: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 

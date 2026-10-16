@@ -49,7 +49,7 @@ python manage.py runserver
 
 ```bash
 python manage.py test blog                    # 자동 테스트
-coverage run manage.py test blog && coverage html   # htmlcov/index.html (현재 100%)
+coverage run manage.py test blog && coverage report && coverage html   # htmlcov/index.html (tests.py 포함 100%)
 python test_api/api_check.py                  # 실행 중인 서버 검증
 python test_api/api_check.py http://<아이디>.pythonanywhere.com
 ```

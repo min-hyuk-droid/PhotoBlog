@@ -1,8 +1,8 @@
 [run]
+# 강의자료 ch04 64·68p 처럼 테스트 코드(blog/tests.py)도 측정 대상에 포함
 source = blog, mysite
 omit =
     */migrations/*
-    */tests.py
     mysite/asgi.py
     mysite/wsgi.py
 
