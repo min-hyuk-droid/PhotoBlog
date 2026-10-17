@@ -11,6 +11,7 @@ from unittest import mock
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
 from django.test import LiveServerTestCase, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -197,9 +198,13 @@ class WebViewTest(MediaTestMixin, TestCase):
         self.assertEqual(self.client.post(url, {'title': '탈취', 'text': 'x'}).status_code, 403)
         self.post.refresh_from_db()
         self.assertEqual((self.post.title, self.post.author), ('웹 글', self.user))
-        # 다른 사람 글에는 수정 버튼이 보이지 않음
+        # 다른 사람 글에는 수정 버튼(수정 페이지 링크)이 보이지 않음
         res = self.client.get(reverse('post_detail', kwargs={'pk': self.post.pk}))
-        self.assertNotContains(res, 'glyphicon-pencil')
+        self.assertNotContains(res, url)
+        # 작성자에게는 보임
+        self.client.force_login(self.user)
+        res = self.client.get(reverse('post_detail', kwargs={'pk': self.post.pk}))
+        self.assertContains(res, url)
 
     def test_staff_edit_keeps_author(self):
         admin = User.objects.create_superuser('admin2', password='pw-12345')
@@ -289,3 +294,26 @@ class RawSocketLiveTest(MediaTestMixin, LiveServerTestCase):
         host, port = self.server_thread.host, self.server_thread.port
         raw = api_engine.send_raw_request(host, port, '/api_root/nope/')
         self.assertEqual(api_engine.parse_http_response(raw).status, 404)
+
+
+class CreateAppUserCommandTest(TestCase):
+    """앱 전용 사용자 생성 명령: 관리자 아님, 비밀번호 로그인 불가, 다시 실행해도 같은 토큰"""
+
+    def test_create_and_rerun(self):
+        out = io.StringIO()
+        call_command('create_app_user', stdout=out, stderr=io.StringIO())
+        user = User.objects.get(username='photoviewer')
+        self.assertFalse(user.is_staff or user.is_superuser)
+        self.assertFalse(user.has_usable_password())
+        self.assertEqual(out.getvalue().strip(), Token.objects.get(user=user).key)
+        out2 = io.StringIO()
+        call_command('create_app_user', stdout=out2, stderr=io.StringIO())
+        self.assertEqual(out.getvalue(), out2.getvalue())
+
+    def test_app_user_cannot_delete_admin_post(self):
+        admin = User.objects.create_superuser('admin2', password='pw-12345')
+        post = Post.objects.create(author=admin, title='관리자 글', text='x', published_date=timezone.now())
+        call_command('create_app_user', 'appuser', stdout=io.StringIO(), stderr=io.StringIO())
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + Token.objects.get(user__username='appuser').key)
+        self.assertEqual(client.delete(f'{API_URL}{post.pk}/').status_code, 403)

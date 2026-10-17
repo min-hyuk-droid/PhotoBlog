@@ -15,8 +15,10 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py collectstatic --noinput
 
-# 앱(PhotoViewer)에서 쓸 사용자와 토큰 (비밀번호 로그인은 막아 둠)
-python manage.py shell -c "from django.contrib.auth.models import User; from rest_framework.authtoken.models import Token; u,_=User.objects.get_or_create(username='admin', defaults={'is_staff': True, 'is_superuser': True}); u.set_unusable_password(); u.save(); print(Token.objects.get_or_create(user=u)[0].key)"
+# 관리자 계정 (게시물 작성자, 비밀번호 로그인은 막아 둠)
+python manage.py shell -c "from django.contrib.auth.models import User; u,_=User.objects.get_or_create(username='admin', defaults={'is_staff': True, 'is_superuser': True}); u.set_unusable_password(); u.save()"
+# 앱(PhotoViewer)에 넣을 토큰은 관리자가 아닌 앱 전용 사용자 것 (출력된 토큰 → REMOTE_TOKEN)
+python manage.py create_app_user
 # 웹 관리자 로그인이 필요하면: python manage.py changepassword admin
 ```
 
@@ -63,11 +65,13 @@ curl -i https://smh0927.pythonanywhere.com/api_root/Post/    # 200, Allow: GET, 
 
 ## 코드 갱신
 
+PythonAnywhere Bash 콘솔에서 한 줄로 실행한다 (최신 코드·라이브러리·DB·정적 파일 반영, 앱 전용 사용자 토큰 출력, 웹앱 재시작).
+
 ```bash
-cd ~/PhotoBlog && git pull
-source ~/.virtualenvs/photoblog-venv/bin/activate
-cd PhotoBlogServer && python manage.py migrate && python manage.py collectstatic --noinput
-# Web 탭에서 Reload
+bash ~/PhotoBlog/PhotoBlogServer/deploy_pythonanywhere.sh
 ```
+
+출력된 토큰을 PhotoViewer 의 `secrets.properties` → `REMOTE_TOKEN` 에 넣고 앱을 다시 빌드한다.
+앱 전용 사용자(`photoviewer`)는 관리자가 아니어서 앱에서는 자기 글만 수정·삭제할 수 있다.
 
 > 무료 계정은 한 달에 한 번 Web 탭의 **Run until 1 month from today** 를 눌러야 사이트가 유지된다.

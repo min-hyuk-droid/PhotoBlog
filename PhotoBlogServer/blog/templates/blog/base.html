@@ -1,29 +1,26 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Photo blog</title>
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-    <link href='//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="{% static 'css/blog.css' %}?v=2">
+    <link rel="icon" href="{% static 'images/favicon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/blog.css' %}?v=4">
 </head>
 <body>
-    <div class="page-header">
-        {% if user.is_authenticated %}
-        <a href="{% url 'post_new' %}" class="top-menu">
-            <span class="glyphicon glyphicon-plus"></span>
+    <header class="topbar">
+        <a class="brand" href="/">
+            <img src="{% static 'images/logo.png' %}" alt="" class="brand-logo">
+            <span>Photo blog</span>
         </a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'post_new' %}" class="btn-yellow">+ 새 글 쓰기</a>
         {% endif %}
-        <h1><a href="/">Photo blog</a></h1>
-    </div>
-    <div class="content container">
-        <div class="row">
-            <div class="col-md-8">
-                {% block content %}
-                {% endblock %}
-            </div>
-        </div>
-    </div>
+    </header>
+    <main class="content">
+        {% block content %}
+        {% endblock %}
+    </main>
 </body>
 </html>

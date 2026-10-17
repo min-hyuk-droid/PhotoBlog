@@ -1,19 +1,18 @@
 {% extends 'blog/base.html' %}
 
 {% block content %}
-<div class="post">
-    {% if post.published_date %}
-    <div class="date">
-        {{ post.published_date }}
+<article class="detail">
+    <img src="{{ post.image.url }}" class="detail-image blog-image-list" alt="{{ post.title }}">
+    <div class="detail-head">
+        <h1>{{ post.title }}</h1>
+        {% if user == post.author or user.is_staff %}
+        <a class="btn-outline" href="{% url 'post_edit' pk=post.pk %}">수정</a>
+        {% endif %}
     </div>
-    {% endif %}
-    {% if user == post.author or user.is_staff %}
-    <a class="btn btn-default" href="{% url 'post_edit' pk=post.pk %}">
-        <span class="glyphicon glyphicon-pencil"></span>
-    </a>
-    {% endif %}
-    <h1>{{ post.title }}</h1>
-    <p>{{ post.text|linebreaksbr }}</p>
-    <img src="{{ post.image.url }}" class="rounded blog-image-list" alt="{{post.title}}">
-</div>
+    <div class="date">
+        {{ post.author.username }}{% if post.published_date %} | {{ post.published_date|date:"Y-m-d H:i" }}{% endif %}
+    </div>
+    <p class="detail-text">{{ post.text|linebreaksbr }}</p>
+    <a class="back" href="/">← 목록으로</a>
+</article>
 {% endblock %}
