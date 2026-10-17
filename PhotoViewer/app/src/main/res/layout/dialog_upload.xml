@@ -15,7 +15,7 @@
             android:id="@+id/editTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="제목 (title · 필수, 200자 이내)"
+            android:hint="제목 (title, 필수, 200자 이내)"
             android:importantForAutofill="no"
             android:inputType="text"
             android:maxLength="200" />
@@ -25,7 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="top"
-            android:hint="내용 (text · 필수)"
+            android:hint="내용 (text, 필수)"
             android:importantForAutofill="no"
             android:inputType="textMultiLine"
             android:minLines="3" />
