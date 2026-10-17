@@ -1,29 +1,29 @@
 <resources>
-    <!-- 검정 + 노랑 테마 (앱 아이콘 색감) -->
-    <style name="AppTheme.Base" parent="Theme.Material3.Dark.NoActionBar">
+    <!-- 크림 + 노랑 테마 (앱 아이콘 색감, 밝은 배경) -->
+    <style name="AppTheme.Base" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/brand_yellow</item>
         <item name="colorOnPrimary">@color/brand_black</item>
         <item name="colorPrimaryContainer">@color/yellow_container</item>
-        <item name="colorOnPrimaryContainer">@color/brand_yellow</item>
+        <item name="colorOnPrimaryContainer">@color/brand_black</item>
         <item name="colorSecondary">@color/brand_yellow</item>
         <item name="colorOnSecondary">@color/brand_black</item>
         <item name="colorSecondaryContainer">@color/yellow_container</item>
-        <item name="colorOnSecondaryContainer">@color/brand_yellow</item>
+        <item name="colorOnSecondaryContainer">@color/brand_black</item>
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/text_primary</item>
         <item name="colorSurfaceContainerHigh">@color/surface</item>
         <item name="colorOnSurfaceVariant">@color/text_secondary</item>
         <item name="colorOutline">@color/outline</item>
         <item name="colorError">@color/error</item>
-        <item name="android:colorBackground">@color/brand_black</item>
-        <item name="android:windowBackground">@color/brand_black</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:windowBackground">@color/background</item>
         <item name="android:textColorPrimary">@color/text_primary</item>
         <item name="android:textColorSecondary">@color/text_secondary</item>
         <item name="android:textColorHint">@color/text_secondary</item>
         <item name="colorControlActivated">@color/brand_yellow</item>
-        <item name="android:statusBarColor">@color/brand_black</item>
-        <item name="android:navigationBarColor">@color/brand_black</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@color/background</item>
+        <item name="android:navigationBarColor">@color/background</item>
+        <item name="android:windowLightStatusBar">true</item>
         <!-- 글꼴: Jua (Google Fonts, OFL) - 일반 글자와 Material 버튼·입력칸 모두 -->
         <item name="android:fontFamily">@font/jua</item>
         <item name="fontFamily">@font/jua</item>
@@ -39,11 +39,11 @@
         <item name="android:dropDownListViewStyle">@style/AppTheme.DropDown</item>
     </style>
 
-    <!-- 대화상자(게시·상세보기·삭제 확인): 어두운 둥근 카드 + 노란 버튼 -->
-    <style name="AppTheme.Dialog" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+    <!-- 대화상자(게시·상세보기·삭제 확인): 흰 둥근 카드 + 노란 강조 -->
+    <style name="AppTheme.Dialog" parent="Theme.AppCompat.Light.Dialog.Alert">
         <item name="android:windowBackground">@drawable/dialog_bg</item>
-        <item name="colorAccent">@color/brand_yellow</item>
-        <item name="colorPrimary">@color/brand_yellow</item>
+        <item name="colorAccent">@color/accent_text</item>
+        <item name="colorPrimary">@color/accent_text</item>
         <item name="android:textColorPrimary">@color/text_primary</item>
         <item name="android:textColorSecondary">@color/text_secondary</item>
         <item name="android:textColorHint">@color/text_secondary</item>
@@ -52,6 +52,15 @@
         <item name="android:fontFamily">@font/jua</item>
         <item name="fontFamily">@font/jua</item>
         <item name="android:textAppearanceButton">@style/AppTheme.TextButton</item>
+        <item name="buttonBarPositiveButtonStyle">@style/AppTheme.DialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/AppTheme.DialogButton</item>
+    </style>
+
+    <!-- 대화상자 아래 [취소]/[게시]/[닫기] 글자: 진한 노랑 -->
+    <style name="AppTheme.DialogButton" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">@color/accent_text</item>
+        <item name="android:fontFamily">@font/jua</item>
+        <item name="android:textSize">16sp</item>
     </style>
 
     <style name="AppTheme.TextButton" parent="TextAppearance.Material3.LabelLarge">
