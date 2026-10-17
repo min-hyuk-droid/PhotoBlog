@@ -30,6 +30,12 @@ public class Post {
         return publishedDate.substring(0, 16).replace('T', ' ');
     }
 
+    /** 2열 격자 카드용 짧은 날짜: "2026-10-16 20:15" -> "10-16 20:15" */
+    public String shortDate() {
+        String d = displayDate();
+        return d.length() >= 16 ? d.substring(5) : d;
+    }
+
     public String meta() {
         return authorName + "  |  " + displayDate();  // Jua 글꼴에 없는 가운뎃점(·) 대신 | 사용
     }
