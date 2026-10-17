@@ -322,17 +322,23 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
             swipeRefresh.setRefreshing(false);
             if (errorMessage != null) {
                 // 실패하면 이전에 받아 둔 목록은 그대로 두고 원인만 표시
-                textView.setText(errorMessage);
+                setStatus(errorMessage);
                 Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                 return;
             }
             if (images.isEmpty()) {
-                textView.setText("불러올 이미지가 없습니다.");
+                setStatus("불러올 이미지가 없습니다.");
             } else {
-                textView.setText("이미지 로드 성공!");
+                setStatus(null);  // 성공하면 안내 문구 없이 목록만 보여줌
             }
             showImages(images, loadedPosts);
         }
+    }
+
+    /** 상태 안내 줄: 오류·빈 목록·업로드 중일 때만 보이고, 정상일 때(null)는 숨김 */
+    private void setStatus(String message) {
+        textView.setText(message == null ? "" : message);
+        textView.setVisibility(message == null ? View.GONE : View.VISIBLE);
     }
 
     private void showImages(List<Bitmap> images, List<Post> posts) {
@@ -420,7 +426,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
         protected void onPreExecute() {
             // 업로드가 끝날 때까지 게시 화면을 유지하고 중복 게시를 막음 (실패하면 입력 내용 그대로 재시도 가능)
             setUploading(true);
-            textView.setText("업로드 중...");
+            setStatus("업로드 중...");
         }
 
         /** 서버 검증 오류(400: {"필드": ["메시지"]})를 해당 입력칸에 표시 */
@@ -521,7 +527,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                 setUploading(false);
                 showFieldErrors();
                 String message = "업로드 실패 (" + responseCode + ") " + responseBody;
-                textView.setText(message);
+                setStatus(message);
                 Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
             }
         }
