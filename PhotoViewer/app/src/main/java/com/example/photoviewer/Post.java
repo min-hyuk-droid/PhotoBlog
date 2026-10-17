@@ -31,6 +31,6 @@ public class Post {
     }
 
     public String meta() {
-        return authorName + " · " + displayDate();
+        return authorName + "  |  " + displayDate();  // Jua 글꼴에 없는 가운뎃점(·) 대신 | 사용
     }
 }

@@ -24,6 +24,16 @@
         <item name="android:statusBarColor">@color/brand_black</item>
         <item name="android:navigationBarColor">@color/brand_black</item>
         <item name="android:windowLightStatusBar">false</item>
+        <!-- 글꼴: Jua (Google Fonts, OFL) - 일반 글자와 Material 버튼·입력칸 모두 -->
+        <item name="android:fontFamily">@font/jua</item>
+        <item name="fontFamily">@font/jua</item>
+        <item name="android:textAppearanceButton">@style/AppTheme.TextButton</item>
+        <item name="textAppearanceLabelLarge">@style/AppTheme.TextButton</item>
+        <item name="textAppearanceBodyLarge">@style/AppTheme.TextBody</item>
+        <item name="textAppearanceBodyMedium">@style/AppTheme.TextBody</item>
+        <item name="textAppearanceTitleMedium">@style/AppTheme.TextBody</item>
+        <item name="textAppearanceTitleLarge">@style/AppTheme.TextBody</item>
+        <item name="textAppearanceHeadlineSmall">@style/AppTheme.TextBody</item>
         <item name="alertDialogTheme">@style/AppTheme.Dialog</item>
         <item name="android:spinnerDropDownItemStyle">@style/AppTheme.SpinnerItem</item>
         <item name="android:dropDownListViewStyle">@style/AppTheme.DropDown</item>
@@ -39,6 +49,20 @@
         <item name="android:textColorHint">@color/text_secondary</item>
         <item name="colorControlNormal">@color/text_secondary</item>
         <item name="colorControlActivated">@color/brand_yellow</item>
+        <item name="android:fontFamily">@font/jua</item>
+        <item name="fontFamily">@font/jua</item>
+        <item name="android:textAppearanceButton">@style/AppTheme.TextButton</item>
+    </style>
+
+    <style name="AppTheme.TextButton" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:fontFamily">@font/jua</item>
+        <item name="fontFamily">@font/jua</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="AppTheme.TextBody" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:fontFamily">@font/jua</item>
+        <item name="fontFamily">@font/jua</item>
     </style>
 
     <!-- 서버 선택 드롭다운 -->
@@ -48,6 +72,7 @@
 
     <style name="AppTheme.SpinnerItem" parent="Widget.AppCompat.DropDownItem.Spinner">
         <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">@font/jua</item>
     </style>
 
     <style name="AppTheme" parent="AppTheme.Base" />
