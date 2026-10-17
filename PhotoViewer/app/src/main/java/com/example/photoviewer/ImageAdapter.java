@@ -47,7 +47,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         holder.imageView.setImageBitmap(bitmap);
         Post post = postList.get(position);
         holder.textTitle.setText(post.title);
-        holder.textMeta.setText(post.meta());
+        holder.textMeta.setText(post.shortDate());  // 카드가 좁아 날짜만, 작성자는 상세보기에서
         holder.itemView.setOnClickListener(v -> listener.onClick(holder.getBindingAdapterPosition()));
         holder.itemView.setOnLongClickListener(v -> {
             listener.onLongClick(holder.getBindingAdapterPosition());

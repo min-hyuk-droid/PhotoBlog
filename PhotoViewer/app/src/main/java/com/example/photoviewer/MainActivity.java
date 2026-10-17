@@ -31,7 +31,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -340,7 +340,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
         postList = posts;
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         ImageAdapter adapter = new ImageAdapter(images, posts, MainActivity.this);
-        recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+        recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, 2));  // [편의기능] 한 줄에 2장
         recyclerView.setAdapter(adapter);
     }
 
