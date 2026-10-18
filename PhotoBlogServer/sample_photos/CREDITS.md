@@ -12,7 +12,9 @@
 | `hokkaido_flowers.jpg` | CC0 | TheOneMattMan | [Field of flowers in Hokkaido, Japan.jpg](https://commons.wikimedia.org/wiki/File:Field_of_flowers_in_Hokkaido,_Japan.jpg) |
 | `juan_griego_sunset.jpg` | CC0 | Wilfredor | [Juan Griego Sunset.jpg](https://commons.wikimedia.org/wiki/File:Juan_Griego_Sunset.jpg) |
 | `autumn_forest.jpg` | CC0 | Martin Vorel | [Autumn Forest Wet Bark.jpg](https://commons.wikimedia.org/wiki/File:Autumn_Forest_Wet_Bark.jpg) |
+| `red_tulips.jpg` | CC0 | Filio | [Tulip Field Tulips Red Holland Nature Flowers.jpg](https://commons.wikimedia.org/wiki/File:Tulip_Field_Tulips_Red_Holland_Nature_Flowers.jpg) |
+| `moraine_lake.jpg` | Public domain | Gorgo | [Moraine Lake 17092005.jpg](https://commons.wikimedia.org/wiki/File:Moraine_Lake_17092005.jpg) |
 
-`autumn_forest.jpg` 는 시연 업로드(앱에서 새 글 올리기)용 예비 사진이다.
+`autumn_forest.jpg`, `red_tulips.jpg`, `moraine_lake.jpg` 는 시연 업로드(웹 API POST, 앱에서 새 글 올리기)용 사진이다.
 
 서버에 올리기: `python test_api/seed_posts.py <서버주소>` (관리자 토큰을 `BLOG_TOKEN` 환경변수로)

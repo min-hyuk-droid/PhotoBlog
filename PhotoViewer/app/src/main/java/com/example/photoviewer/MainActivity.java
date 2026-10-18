@@ -392,10 +392,12 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
             // Post 모델 규칙에 맞춘 입력 검사: title(필수, 200자), text(필수), image
             if (title.isEmpty()) {
                 editTitle.setError("제목을 입력하세요");
+                editTitle.requestFocus();  // 빠진 칸으로 커서 이동 + 오류 메시지 표시
                 return;
             }
             if (text.isEmpty()) {
                 editText.setError("내용을 입력하세요");
+                editText.requestFocus();  // 빠진 칸으로 커서 이동 + 오류 메시지 표시
                 return;
             }
             if (selectedImageUri == null) {
@@ -530,6 +532,7 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                 } catch (JSONException ignored) {
                 }
                 Toast.makeText(MainActivity.this, "게시 완료: " + title, Toast.LENGTH_LONG).show();
+                setStatus(null);  // 업로드 끝 → "업로드 중..." 안내 지움
                 onClickDownload(null); // 목록 다시 동기화
             } else {
                 setUploading(false);
