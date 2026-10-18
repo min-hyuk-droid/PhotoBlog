@@ -11,6 +11,7 @@ from unittest import mock
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.files.storage import default_storage
 from django.core.management import call_command
 from django.test import LiveServerTestCase, TestCase, override_settings
 from django.urls import reverse
@@ -20,7 +21,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
 from . import api_engine
-from .models import Post
+from .models import DEFAULT_IMAGE, Post
 
 API_URL = '/api_root/Post/'
 MEDIA_ROOT = tempfile.mkdtemp()
@@ -317,3 +318,36 @@ class CreateAppUserCommandTest(TestCase):
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION='Token ' + Token.objects.get(user__username='appuser').key)
         self.assertEqual(client.delete(f'{API_URL}{post.pk}/').status_code, 403)
+
+
+@override_settings(MEDIA_ROOT=MEDIA_ROOT)
+class ImageFileCleanupTest(MediaTestMixin, TestCase):
+    """글을 지우거나 사진을 바꾸면 서버의 사진 파일도 지워지고, 기본 이미지는 남는다"""
+
+    def setUp(self):
+        self.user = User.objects.create_user('kiok', password='pw-12345')
+
+    def test_delete_post_removes_file(self):
+        post = Post.objects.create(author=self.user, title='t', text='x', image=make_image('del.jpg'))
+        name = post.image.name
+        self.assertTrue(post.image.storage.exists(name))
+        post.delete()
+        self.assertFalse(default_storage.exists(name))
+
+    def test_replace_image_removes_old_file(self):
+        post = Post.objects.create(author=self.user, title='t', text='x', image=make_image('old.jpg'))
+        old = post.image.name
+        post.image = make_image('new.jpg')
+        post.save()
+        self.assertFalse(default_storage.exists(old))
+        self.assertTrue(default_storage.exists(post.image.name))
+        post.title = '제목만 수정'
+        post.save()  # 사진을 바꾸지 않으면 그대로
+        self.assertTrue(default_storage.exists(post.image.name))
+
+    def test_default_image_is_kept(self):
+        post = Post.objects.create(author=self.user, title='t', text='x')
+        self.assertEqual(post.image.name, DEFAULT_IMAGE)
+        with mock.patch.object(post.image.storage, 'delete') as delete:
+            post.delete()
+        delete.assert_not_called()

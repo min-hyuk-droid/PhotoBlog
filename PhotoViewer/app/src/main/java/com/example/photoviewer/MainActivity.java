@@ -137,10 +137,8 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
         swipeRefresh.setProgressBackgroundColorSchemeColor(getColor(R.color.surface));
         swipeRefresh.setOnRefreshListener(() -> onClickSearch(null));
 
-        // [편의기능] 앱을 켜면 자동 동기화 (화면을 돌려 다시 만들어질 때는 제외)
-        if (savedInstanceState == null) {
-            onClickDownload(null);
-        }
+        // [편의기능] 앱을 켜면 자동 동기화 (화면을 돌려 화면이 다시 만들어져도 목록을 다시 받아옴)
+        onClickDownload(null);
 
         editSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -283,19 +281,14 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                     String strJson = result.toString();
                     JSONArray aryJson = new JSONArray(strJson);
                     // 배열 내 모든 이미지 다운로드
-                    for (int i = 0; i < aryJson.length(); i++) {
-                        post_json = (JSONObject) aryJson.get(i);
-                        imageUrl = post_json.getString("image");
-                        if (!imageUrl.equals("")) {
-                            URL myImageUrl = new URL(imageUrl);
-                            conn = (HttpURLConnection) myImageUrl.openConnection();
-                            conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
-                            conn.setReadTimeout(READ_TIMEOUT_MS);
-                            InputStream imgStream = conn.getInputStream();
-                            Bitmap imageBitmap = BitmapFactory.decodeStream(imgStream);
-                            bitmapList.add(imageBitmap); // 이미지 리스트에 추가
-                            loadedPosts.add(new Post(post_json));
-                            imgStream.close();
+                    // (강의자료는 post_json·imageUrl 필드를 쓰지만, 검색으로 동기화가 겹치면 다른 작업이 값을
+                    //  덮어써 제목과 사진이 섞일 수 있어 이 작업 안의 지역 변수로 처리)
+                    for (int i = 0; i < aryJson.length() && !isCancelled(); i++) {
+                        JSONObject postJson = (JSONObject) aryJson.get(i);
+                        String postImageUrl = postJson.getString("image");
+                        if (!postImageUrl.equals("")) {
+                            bitmapList.add(downloadImage(postImageUrl)); // 이미지 리스트에 추가
+                            loadedPosts.add(new Post(postJson));
                         }
                     }
                 } else {
@@ -315,6 +308,19 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
                 errorMessage = "네트워크 오류: " + e.getMessage();
             }
             return bitmapList;
+        }
+
+        /** 사진 1장 다운로드: 긴 변 800px 근처로 줄여서 읽고(카드·상세보기에 충분), 실패하면 null (나머지 목록은 계속) */
+        private Bitmap downloadImage(String url) throws IOException {
+            HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+            conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
+            conn.setReadTimeout(READ_TIMEOUT_MS);
+            try (InputStream imgStream = conn.getInputStream()) {
+                return decodeScaled(readAll(imgStream), 800);
+            } catch (java.io.FileNotFoundException e) {
+                e.printStackTrace();  // 서버에 사진 파일이 없음(404) → 빈 칸으로 표시
+                return null;
+            }
         }
 
         @Override
@@ -346,7 +352,9 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
         postList = posts;
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         ImageAdapter adapter = new ImageAdapter(images, posts, MainActivity.this);
-        recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, 2));  // [편의기능] 한 줄에 2장
+        // [편의기능] 한 줄에 2장 (가로 화면처럼 넓으면 4장)
+        int columns = getResources().getConfiguration().screenWidthDp >= 600 ? 4 : 2;
+        recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, columns));
         recyclerView.setAdapter(adapter);
     }
 
@@ -549,18 +557,18 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
         }
     }
 
-    /** 큰 사진은 maxSize 이하로 줄여서 읽고, EXIF 회전 정보대로 바로 세운다 (메모리 부족·눕은 사진 방지) */
-    private Bitmap loadUploadImage(Uri uri, int maxSize) throws IOException {
-        byte[] data;
-        try (InputStream in = getContentResolver().openInputStream(uri)) {
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            byte[] chunk = new byte[8192];
-            int n;
-            while ((n = in.read(chunk)) != -1) {
-                buf.write(chunk, 0, n);
-            }
-            data = buf.toByteArray();
+    private static byte[] readAll(InputStream in) throws IOException {
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        byte[] chunk = new byte[8192];
+        int n;
+        while ((n = in.read(chunk)) != -1) {
+            buf.write(chunk, 0, n);
         }
+        return buf.toByteArray();
+    }
+
+    /** 긴 변이 maxSize 근처가 되도록 2의 배수로 줄여서 디코딩 (원본 그대로 읽으면 사진 1장에 7~10MB 메모리) */
+    private static Bitmap decodeScaled(byte[] data, int maxSize) {
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inJustDecodeBounds = true;
         BitmapFactory.decodeByteArray(data, 0, data.length, opts);
@@ -570,7 +578,16 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnPo
         }
         opts = new BitmapFactory.Options();
         opts.inSampleSize = sample;
-        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, opts);
+        return BitmapFactory.decodeByteArray(data, 0, data.length, opts);
+    }
+
+    /** 큰 사진은 maxSize 이하로 줄여서 읽고, EXIF 회전 정보대로 바로 세운다 (메모리 부족·눕은 사진 방지) */
+    private Bitmap loadUploadImage(Uri uri, int maxSize) throws IOException {
+        byte[] data;
+        try (InputStream in = getContentResolver().openInputStream(uri)) {
+            data = readAll(in);
+        }
+        Bitmap bitmap = decodeScaled(data, maxSize);
         if (bitmap == null) {
             return null;
         }
