@@ -5,16 +5,18 @@
 
 | 파일 | 라이선스 | 작가 | 원본 |
 |---|---|---|---|
+| `corgi_standing.jpg` | CC0 | Huoadg5888 | [Fawn and white Welsh Corgi puppy standing on rear legs and sticking out the tongue.jpg](https://commons.wikimedia.org/wiki/File:Fawn_and_white_Welsh_Corgi_puppy_standing_on_rear_legs_and_sticking_out_the_tongue.jpg) |
+| `jindo_puppy.jpg` | CC0 | beethoven_e | [Jindo puppy.jpg](https://commons.wikimedia.org/wiki/File:Jindo_puppy.jpg) |
+| `shiba_smile.jpg` | Public domain | Roberto Vasarri | [Shiba inu taiki.jpg](https://commons.wikimedia.org/wiki/File:Shiba_inu_taiki.jpg) |
 | `yellowstone_sunrise.jpg` | Public domain | Yellowstone National Park | [Sunrise on Yellowstone Lake (Flat Mountain Arm) (32985162453).jpg](https://commons.wikimedia.org/wiki/File:Sunrise_on_Yellowstone_Lake_(Flat_Mountain_Arm)_(32985162453).jpg) |
-| `blue_eyed_cat.jpg` | CC0 | AdinaVoicu | [Tabby cat with blue eyes-3336579.jpg](https://commons.wikimedia.org/wiki/File:Tabby_cat_with_blue_eyes-3336579.jpg) |
 | `quebec_night.jpg` | CC0 | Wilfredor | [Chateau Frontenac illuminated at night in Quebec City.jpg](https://commons.wikimedia.org/wiki/File:Chateau_Frontenac_illuminated_at_night_in_Quebec_City.jpg) |
-| `cafe_latte.jpg` | CC0 | Edward | [Cup of coffee in Café Butter - Prenzlauer Berg, Berlin.jpg](https://commons.wikimedia.org/wiki/File:Cup_of_coffee_in_Caf%C3%A9_Butter_-_Prenzlauer_Berg,_Berlin.jpg) |
 | `hokkaido_flowers.jpg` | CC0 | TheOneMattMan | [Field of flowers in Hokkaido, Japan.jpg](https://commons.wikimedia.org/wiki/File:Field_of_flowers_in_Hokkaido,_Japan.jpg) |
-| `juan_griego_sunset.jpg` | CC0 | Wilfredor | [Juan Griego Sunset.jpg](https://commons.wikimedia.org/wiki/File:Juan_Griego_Sunset.jpg) |
 | `autumn_forest.jpg` | CC0 | Martin Vorel | [Autumn Forest Wet Bark.jpg](https://commons.wikimedia.org/wiki/File:Autumn_Forest_Wet_Bark.jpg) |
 | `red_tulips.jpg` | CC0 | Filio | [Tulip Field Tulips Red Holland Nature Flowers.jpg](https://commons.wikimedia.org/wiki/File:Tulip_Field_Tulips_Red_Holland_Nature_Flowers.jpg) |
 | `moraine_lake.jpg` | Public domain | Gorgo | [Moraine Lake 17092005.jpg](https://commons.wikimedia.org/wiki/File:Moraine_Lake_17092005.jpg) |
 
 `autumn_forest.jpg`, `red_tulips.jpg`, `moraine_lake.jpg` 는 시연 업로드(웹 API POST, 앱에서 새 글 올리기)용 사진이다.
 
-서버에 올리기: `python test_api/seed_posts.py <서버주소>` (관리자 토큰을 `BLOG_TOKEN` 환경변수로)
+서버에 올리기 (PhotoBlogServer 에서, 관리자 계정 필요):
+`python manage.py shell -c "exec(open('sample_photos/load_samples.py', encoding='utf-8').read())"`
+— posts.json 의 제목·내용·게시일(date)대로 관리자 글을 만든다.

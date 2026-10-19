@@ -1,32 +1,38 @@
 [
  {
-  "file": "juan_griego_sunset.jpg",
-  "title": "후안 그리에고의 노을",
-  "text": "베네수엘라 마르가리타 섬, 배들 사이로 해가 진다."
+  "file": "corgi_standing.jpg",
+  "title": "벌떡 일어선 코기",
+  "text": "간식 봉지 소리에 두 발로 일어섰다. 짧은 다리로 꽤 오래 버팀.",
+  "date": "2026-10-17 20:16"
+ },
+ {
+  "file": "jindo_puppy.jpg",
+  "title": "진돗개 아기",
+  "text": "생후 두 달 된 진돗개 강아지. 이불 위에서 잠깐 눈 뜬 순간.",
+  "date": "2026-10-16 09:48"
  },
  {
   "file": "hokkaido_flowers.jpg",
   "title": "홋카이도 꽃밭",
-  "text": "언덕을 따라 줄무늬처럼 이어진 꽃밭."
+  "text": "언덕을 따라 줄무늬처럼 이어진 꽃밭.",
+  "date": "2026-10-15 13:27"
  },
  {
-  "file": "cafe_latte.jpg",
-  "title": "카페 라테 한 잔",
-  "text": "베를린의 작은 카페에서 마신 라테."
+  "file": "shiba_smile.jpg",
+  "title": "웃는 시바",
+  "text": "산책 다녀와서 기분 좋은 시바 강아지. 표정이 꼭 사람 같다.",
+  "date": "2026-10-14 18:05"
  },
  {
   "file": "quebec_night.jpg",
   "title": "퀘벡의 밤",
-  "text": "불을 밝힌 샤토 프롱트낙과 퀘벡 시내 야경."
- },
- {
-  "file": "blue_eyed_cat.jpg",
-  "title": "파란 눈의 고양이",
-  "text": "눈이 파란 줄무늬 고양이."
+  "text": "불을 밝힌 샤토 프롱트낙과 퀘벡 시내 야경.",
+  "date": "2026-10-12 22:41"
  },
  {
   "file": "yellowstone_sunrise.jpg",
   "title": "옐로스톤 호수의 일출",
-  "text": "옐로스톤 호수에 비친 아침 노을."
+  "text": "옐로스톤 호수에 비친 아침 노을.",
+  "date": "2026-10-11 07:12"
  }
 ]
